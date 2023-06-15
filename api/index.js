@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
+const imageDownloader = require("image-downloader");
 
 const bcryptSalt = bcrypt.genSaltSync(10);
 const jwtSecret = "rhjdke094756rjhrfnn78";
@@ -13,6 +14,7 @@ const jwtSecret = "rhjdke094756rjhrfnn78";
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+app.use("/uploads", express.static(__dirname + "/uploads"));
 app.use(
   cors({
     credentials: true,
@@ -94,6 +96,21 @@ app.get("/profile", (req, res) => {
   } else {
     res.json(null);
   }
+});
+
+app.post("/logout", (req, res) => {
+  res.cookie("token", "").json(true);
+});
+
+//upload by link
+app.post("/upload-by-link", async (req, res) => {
+  const { link } = req.body;
+  const newName = "photo" + Date.now() + ".jpg";
+  await imageDownloader.image({
+    url: link,
+    dest: __dirname + "/uploads/" + newName,
+  });
+  res.json(newName);
 });
 
 app.listen(PORT, () => {
