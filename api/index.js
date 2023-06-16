@@ -7,6 +7,8 @@ const cors = require("cors");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const imageDownloader = require("image-downloader");
+const multer = require("multer");
+const fs = require("fs");
 
 const bcryptSalt = bcrypt.genSaltSync(10);
 const jwtSecret = "rhjdke094756rjhrfnn78";
@@ -104,13 +106,34 @@ app.post("/logout", (req, res) => {
 
 //upload by link
 app.post("/upload-by-link", async (req, res) => {
-  const { link } = req.body;
-  const newName = "photo" + Date.now() + ".jpg";
-  await imageDownloader.image({
-    url: link,
-    dest: __dirname + "/uploads/" + newName,
+  try {
+    const { link } = req.body;
+    const newName = "photo" + Date.now() + ".jpg";
+    await imageDownloader.image({
+      url: link,
+      dest: __dirname + "/uploads/" + newName,
+    });
+    res.json(newName);
+  } catch (error) {
+    res.json(error.message);
+  }
+});
+
+const photoMiddleware = multer({ dest: "uploads/" });
+
+app.post("/upload", photoMiddleware.array("photos", 100), (req, res) => {
+  const files = req.files;
+  const uploadedFiles = [];
+  files.forEach((element) => {
+    const { path, originalname } = element;
+    const parts = originalname.split(".");
+    const ext = parts[parts.length - 1];
+    const newPath = path + "." + ext;
+    fs.renameSync(path, newPath);
+
+    uploadedFiles.push(newPath.replace("uploads", ""));
   });
-  res.json(newName);
+  res.json(uploadedFiles);
 });
 
 app.listen(PORT, () => {
