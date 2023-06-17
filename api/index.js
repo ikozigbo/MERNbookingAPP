@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const User = require("./models/user");
+const Place = require("./models/place");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 require("dotenv").config();
@@ -134,6 +135,51 @@ app.post("/upload", photoMiddleware.array("photos", 100), (req, res) => {
     uploadedFiles.push(newPath.replace("uploads", ""));
   });
   res.json(uploadedFiles);
+});
+
+app.post("/places", (req, res) => {
+  const { token } = req.cookies;
+  const {
+    title,
+    address,
+    addedPhotos,
+    description,
+    perks,
+    extraInfo,
+    checkIn,
+    checkOut,
+    maxGuests,
+  } = req.body;
+  jwt.verify(token, jwtSecret, {}, async (err, user) => {
+    try {
+      if (err) throw err;
+      const placeDoc = await Place.create({
+        owner: user.id,
+        title,
+        address,
+        photos: addedPhotos,
+        description,
+        perks,
+        extraInfo,
+        checkIn,
+        checkOut,
+        maxGuests,
+      });
+      res.json(placeDoc);
+    } catch (error) {
+      res.json(error.message);
+    }
+  });
+});
+
+app.get("/places", (req, res) => {
+  const { token } = req.cookies;
+  jwt.verify(token, jwtSecret, {}, async (err, user) => {
+    try {
+      const placesDocs = await Place.find({ owner: user.id });
+      res.json(placesDocs);
+    } catch (error) {}
+  });
 });
 
 app.listen(PORT, () => {
