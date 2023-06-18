@@ -10,6 +10,7 @@ const jwt = require("jsonwebtoken");
 const imageDownloader = require("image-downloader");
 const multer = require("multer");
 const fs = require("fs");
+const { log } = require("console");
 
 const bcryptSalt = bcrypt.genSaltSync(10);
 const jwtSecret = "rhjdke094756rjhrfnn78";
@@ -172,14 +173,78 @@ app.post("/places", (req, res) => {
   });
 });
 
-app.get("/places", (req, res) => {
+app.get("/userplaces", (req, res) => {
   const { token } = req.cookies;
   jwt.verify(token, jwtSecret, {}, async (err, user) => {
     try {
       const placesDocs = await Place.find({ owner: user.id });
       res.json(placesDocs);
-    } catch (error) {}
+    } catch (error) {
+      res.json(error.message);
+    }
   });
+});
+
+app.get("/places/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const placeDoc = await Place.findById(id);
+    res.json(placeDoc);
+  } catch (error) {
+    res.json(error.message);
+  }
+});
+
+app.put("/places", (req, res) => {
+  const { token } = req.cookies;
+  const {
+    id,
+    title,
+    address,
+    addedPhotos,
+    description,
+    perks,
+    extraInfo,
+    checkIn,
+    checkOut,
+    maxGuests,
+  } = req.body;
+
+  jwt.verify(token, jwtSecret, {}, async (err, user) => {
+    try {
+      if (err) throw err;
+      const placeDoc = await Place.findById(id);
+      console.log(user.id);
+      console.log(placeDoc.owner);
+      if (placeDoc.owner.toString() === user.id) {
+        placeDoc.set({
+          title,
+          address,
+          photos: addedPhotos,
+          description,
+          perks,
+          extraInfo,
+          checkIn,
+          checkOut,
+          maxGuests,
+        });
+        placeDoc.save();
+        res.json("ok");
+      } else {
+        res.json("not authorized to make changes");
+      }
+    } catch (error) {
+      res.json(error.message);
+    }
+  });
+});
+
+app.get("/places", async (req, res) => {
+  try {
+    res.json(await Place.find());
+  } catch (error) {
+    res.json(error.message);
+  }
 });
 
 app.listen(PORT, () => {
