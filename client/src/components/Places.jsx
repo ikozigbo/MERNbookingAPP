@@ -6,7 +6,7 @@ import axios from "axios";
 export default function PlacesPage() {
   const [places, setPlaces] = useState([]);
   useEffect(() => {
-    axios.get("/places").then(({ data }) => {
+    axios.get("/userplaces").then(({ data }) => {
       setPlaces(data);
     });
   }, []);
@@ -41,15 +41,24 @@ export default function PlacesPage() {
       <div className="mt-4">
         {places.length > 0 &&
           places.map((place) => (
-            <div className="flex gap-4 mt-4 bg-gray-200 p-4 rounded-2xl">
-              <div className="w-32 h-32 bg-gray-300">
+            <Link
+              to={"/account/places/" + place._id}
+              className="flex cursor-pointer gap-4 mt-4 bg-gray-200 p-4 rounded-2xl"
+            >
+              <div className="flex w-32 h-32 bg-gray-300 grow-0 shrink-0">
                 {place.photos.length > 0 && (
-                  <img src={place.photos[0]} alt="o" />
+                  <img
+                    className="objet-cover"
+                    src={"http://localhost:9091/uploads" + place.photos[0]}
+                    alt="o"
+                  />
                 )}
               </div>
-              <h2 className="text-xl">{place.title}</h2>
-              <p>{place.description}</p>
-            </div>
+              <div className="grow-0 shrink">
+                <h2 className="text-xl">{place.title}</h2>
+                <p className="text-sm mt-2">{place.description}</p>
+              </div>
+            </Link>
           ))}
       </div>
     </div>

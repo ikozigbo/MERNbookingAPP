@@ -1,11 +1,12 @@
 import Perks from "../components/Perks";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PhotosUploader from "../components/PhotoUpload";
 import AccountNavigation from "../components/AccountNav";
-import { Navigate } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 
 export default function PlacesFormPage() {
+  const { id } = useParams();
   const [title, setTile] = useState("");
   const [address, setAddress] = useState("");
   const [addedPhotos, setAddedPhotos] = useState([]);
@@ -16,6 +17,23 @@ export default function PlacesFormPage() {
   const [checkOut, setCheckOut] = useState("");
   const [maxGuests, setMaxGuests] = useState(1);
   const [redirect, setRedirect] = useState(false);
+  useEffect(() => {
+    if (!id) {
+      return;
+    }
+    axios.get("/places/" + id).then((response) => {
+      const { data } = response;
+      setTile(data.title);
+      setAddress(data.address);
+      setAddedPhotos(data.photos);
+      setDescription(data.description);
+      setPerks(data.perks);
+      setExtraInfo(data.extraInfo);
+      setCheckIn(data.checkIn);
+      setCheckOut(data.checkOut);
+      setMaxGuests(data.maxGuests);
+    });
+  }, [id]);
 
   function preInput(header, description) {
     return (
@@ -26,7 +44,7 @@ export default function PlacesFormPage() {
     );
   }
 
-  async function addNewPlace(ev) {
+  async function savePlace(ev) {
     ev.preventDefault();
     const placeData = {
       title,
@@ -39,8 +57,15 @@ export default function PlacesFormPage() {
       checkOut,
       maxGuests,
     };
-    await axios.post("/places", placeData);
-    setRedirect(true);
+    if (id) {
+      // update
+      await axios.put("/places", { id, ...placeData });
+      setRedirect(true);
+    } else {
+      // new place
+      await axios.post("/places", placeData);
+      setRedirect(true);
+    }
   }
 
   if (redirect) {
@@ -51,7 +76,7 @@ export default function PlacesFormPage() {
     <>
       <div>
         <AccountNavigation />
-        <form onSubmit={addNewPlace}>
+        <form onSubmit={savePlace}>
           {preInput("Title", "title of your place should goes hear")}
 
           <input
