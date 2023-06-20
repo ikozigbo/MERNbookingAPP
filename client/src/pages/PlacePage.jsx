@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import BookingWidget from "../components/BookingWidget";
 
 export default function PlacePage() {
   const { id } = useParams();
@@ -23,7 +24,9 @@ export default function PlacePage() {
       <div className="absolute bg-black inset-0 min-h-screen ">
         <div className="bg-black p-8 grid gap-4">
           <div>
-            <h2 className="text-3xl text-white">Photos of {place.title}</h2>
+            <h2 className="text-3xl text-white mr-48">
+              Photos of {place.title}
+            </h2>
             <button
               onClick={() => setShowAllPhotos(false)}
               className="fixed right-12 top-8 flex gap-1 py-2 px-4 rounded-2xl shadow shadow-black bg-white text-black"
@@ -57,7 +60,7 @@ export default function PlacePage() {
   }
 
   return (
-    <div className="mt-4 bg-gray-100 -mx-8 px-8 py-8">
+    <div className="mt-4 bg-gray-100 -mx-8 px-8 pt-8">
       <h1 className="text-3xl">{place.title}</h1>
       <a
         className="flex gap-1 font-semibold underline my-2"
@@ -93,7 +96,8 @@ export default function PlacePage() {
             {place.photos?.[0] && (
               <div>
                 <img
-                  className="aspect-square object-cover"
+                  onClick={() => setShowAllPhotos(true)}
+                  className="cursor-pointer aspect-square object-cover"
                   src={"http://localhost:9091/uploads/" + place.photos[0]}
                   alt="?"
                 />
@@ -103,7 +107,8 @@ export default function PlacePage() {
           <div className="">
             {place.photos?.[1] && (
               <img
-                className="aspect-square object-cover"
+                onClick={() => setShowAllPhotos(true)}
+                className="cursor-pointer aspect-square object-cover"
                 src={"http://localhost:9091/uploads/" + place.photos[1]}
                 alt="?"
               />
@@ -111,7 +116,8 @@ export default function PlacePage() {
             <div className="overflow-hidden">
               {place.photos?.[0] && (
                 <img
-                  className="aspect-square object-cover relative top-2"
+                  onClick={() => setShowAllPhotos(true)}
+                  className="cursor-pointer aspect-square object-cover relative top-2"
                   src={"http://localhost:9091/uploads/" + place.photos[0]}
                   alt="?"
                 />
@@ -141,7 +147,7 @@ export default function PlacePage() {
         </button>
       </div>
 
-      <div className="mt-8 gap-8 grid grid-cols-1 md:grid-cols-[2fr_1fr]">
+      <div className="mt-8 mb-8 gap-8 grid grid-cols-1 md:grid-cols-[2fr_1fr]">
         <div>
           <div className="my-4">
             <h2 className="font-semibold text-2xl">Description</h2>
@@ -154,28 +160,15 @@ export default function PlacePage() {
           Max number of guests: {place.maxGuests}
         </div>
         <div>
-          <div className="bg-white rounded-2xl p-4 shadow">
-            <div className="text-2xl text-center">
-              Price: ${place.price}/ per night
-            </div>
-            <div className="border rounded-2xl mt-4">
-              <div className="flex">
-                <div className="py-3  px-4 ">
-                  <label>Check In:</label>
-                  <input type="date" />
-                </div>
-                <div className="py-3 px-4 border-l">
-                  <label>Check Out:</label>
-                  <input type="date" />
-                </div>
-              </div>
-              <div className="py-3  px-4  border-t">
-                <label>Number of Guests:</label>
-                <input type="Number" value={1} />
-              </div>
-            </div>
-            <button className="mt-4 primary">Book this place </button>
-          </div>
+          <BookingWidget place={place} />
+        </div>
+      </div>
+      <div className="bg-white -mx-8 px-8 py-8 border-t">
+        <div>
+          <h2 className="font-semibold text-2xl">Extra Info</h2>
+        </div>
+        <div className="mb-4 mt-2 text-sm text-gray-700 leading-5">
+          {place.extraInfo}
         </div>
       </div>
     </div>
