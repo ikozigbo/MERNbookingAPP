@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const User = require("./models/user");
 const Place = require("./models/place");
+const Booking = require("./models/bookings");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 require("dotenv").config();
@@ -11,6 +12,7 @@ const imageDownloader = require("image-downloader");
 const multer = require("multer");
 const fs = require("fs");
 const { log } = require("console");
+const { openStdin } = require("process");
 
 const bcryptSalt = bcrypt.genSaltSync(10);
 const jwtSecret = "rhjdke094756rjhrfnn78";
@@ -246,6 +248,25 @@ app.put("/places", (req, res) => {
 app.get("/places", async (req, res) => {
   try {
     res.json(await Place.find());
+  } catch (error) {
+    res.json(error.message);
+  }
+});
+
+app.post("/booking", async (req, res) => {
+  try {
+    const { place, checkIn, checkOut, numberOfGuests, name, phone, price } =
+      req.body;
+    const booking = await Booking.create({
+      place,
+      checkIn,
+      checkOut,
+      numberOfGuests,
+      name,
+      phone,
+      price,
+    });
+    res.json(booking);
   } catch (error) {
     res.json(error.message);
   }
