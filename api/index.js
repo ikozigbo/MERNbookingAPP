@@ -41,6 +41,17 @@ mongoose
     console.log(e.message);
   });
 
+function getUserDataFromToken(req) {
+  return new Promise((resolve, reject) => {
+    jwt.verify(req.cookies.token, jwtSecret, {}, async (err, user) => {
+      if (err) throw err;
+      else {
+        resolve(user);
+      }
+    });
+  });
+}
+
 app.get("/test", (req, res) => {
   res.json("ok");
 });
@@ -254,10 +265,12 @@ app.get("/places", async (req, res) => {
 });
 
 app.post("/booking", async (req, res) => {
+  const userData = await getUserDataFromToken(req);
   try {
     const { place, checkIn, checkOut, numberOfGuests, name, phone, price } =
       req.body;
     const booking = await Booking.create({
+      user: userData.id,
       place,
       checkIn,
       checkOut,
@@ -269,6 +282,15 @@ app.post("/booking", async (req, res) => {
     res.json(booking);
   } catch (error) {
     res.json(error.message);
+  }
+});
+
+app.get("/bookings", async (req, res) => {
+  const userData = await getUserDataFromToken(req);
+  if (!userData) {
+    return res.status(401).json({ message: "user not found" });
+  } else {
+    res.json(await Booking.find({ user: userData.id }).populate("place"));
   }
 });
 
